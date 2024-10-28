@@ -33,71 +33,9 @@ import {
 } from '@apache-annotator/dom';
 import { makeRefinable } from '@apache-annotator/selector';
 
-const EXAMPLE_SELECTORS = [
-  {
-    type: 'TextQuoteSelector',
-    exact: 'not',
-  },
-  {
-    type: 'RangeSelector',
-    startSelector: {
-      type: 'TextQuoteSelector',
-      exact: 'ann',
-    },
-    endSelector: {
-      type: 'TextQuoteSelector',
-      exact: '!',
-    },
-  },
-  {
-    type: 'TextQuoteSelector',
-    exact: 'annotated world',
-    refinedBy: {
-      type: 'TextQuoteSelector',
-      exact: 'tat',
-    },
-  },
-  {
-    type: 'TextQuoteSelector',
-    exact: 'To annotate, or not to annotate,',
-    refinedBy: {
-      type: 'RangeSelector',
-      startSelector: {
-        type: 'TextQuoteSelector',
-        exact: 'To annotate',
-        refinedBy: {
-          type: 'TextQuoteSelector',
-          exact: 'annotate',
-        },
-      },
-      endSelector: {
-        type: 'TextQuoteSelector',
-        exact: 'not to annotate',
-        refinedBy: {
-          type: 'TextQuoteSelector',
-          exact: ' to',
-        },
-      },
-      refinedBy: {
-        type: 'TextQuoteSelector',
-        exact: 'o',
-      },
-    },
-  },
-];
-
 let moduleState = {
   cleanupFunctions: [],
 };
-
-function cleanup() {
-  let removeHighlight;
-  while ((removeHighlight = moduleState.cleanupFunctions.shift())) {
-    removeHighlight();
-  }
-  target.normalize();
-  info.innerText = '';
-}
 
 const createMatcher = makeRefinable((selector) => {
   const innerCreateMatcher = {
@@ -128,52 +66,50 @@ async function anchor(selector) {
     moduleState.cleanupFunctions.push(removeHighlight);
   }
 
-  info.innerText += JSON.stringify(selector, null, 2) + '\n\n';
 }
 
-async function onSelectionChange() {
-  cleanup();
-  const describeMode = form.describeMode.value;
-  const selection = document.getSelection();
-  for (let i = 0; i < selection.rangeCount; i++) {
-    const range = selection.getRangeAt(i);
-    const selector =
-      describeMode === 'TextPosition'
-        ? await describeTextPosition(range, source)
-        : await describeTextQuote(range, source, { minimumQuoteLength: 10 });
-    await anchor(selector);
+function offsetAdapted(num, text) {
+  // the html tag <p> makes newlines to <br/>, which are then removed by apache-annotator's normalizing
+  // this throws off the index from .cas to apache-annotator
+  // Thus the .cas indexes are adapted
+  // TODO: fix issue when num close to indices
+
+  // create list of indexes of newline characters
+  var indices = [];
+  for (var i = 0; i < text.length; i++) {
+    if (text[i] == "\n" || text[i] == "\r") { indices.push(i); }
+  }
+
+  // offset increases for every newline that occurs BEFORE the given index
+  var offset = 0
+  for (var i = 0; i < indices.length; i++) {
+    if (indices[i] < num) { offset += 1 }
+  }
+
+  return num - offset
+}
+
+let data = require('./documents/wikipedia_cheetah.json')
+
+let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
+var documenttext = ""
+for (let el of data["%FEATURE_STRUCTURES"]) {
+  if (el["%ID"] == sofa_id) {
+    documenttext = el["sofaString"]
+    target.innerText = documenttext
+  }
+}
+for (let el of data["%FEATURE_STRUCTURES"]) {
+  if (el["%TYPE"].startsWith("webanno")) {
+    await anchor({ "type": "TextPositionSelector", "start": offsetAdapted(el["begin"], documenttext), "end": offsetAdapted(el["end"], documenttext) });
   }
 }
 
-function onSelectorExampleClick(event) {
-  const exampleNumber = event.target.dataset.runExample;
-  if (!exampleNumber) return;
-  const selector = EXAMPLE_SELECTORS[exampleNumber];
-  cleanup();
-  anchor(selector);
-  event.preventDefault();
-}
 
-function addEventListeners() {
-  document.addEventListener('selectionchange', onSelectionChange);
-  form.addEventListener('change', onSelectionChange);
-  document.addEventListener('click', onSelectorExampleClick);
-}
-addEventListeners();
 
-function removeEventListeners() {
-  document.removeEventListener('selectionchange', onSelectionChange);
-  form.removeEventListener('change', onSelectionChange);
-  document.removeEventListener('click', onSelectorExampleClick);
-}
 
-if (module.hot) {
-  module.hot.accept();
-  module.hot.dispose((data) => {
-    removeEventListeners();
-    data.state = moduleState;
-  });
-  if (module.hot.data?.state) {
-    moduleState = module.hot.data.state;
-  }
-}
+
+
+
+
+

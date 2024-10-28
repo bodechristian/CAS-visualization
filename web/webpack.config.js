@@ -34,7 +34,7 @@ module.exports = {
         use: 'babel-loader',
       },
       {
-        exclude: /\.[jt]s$/,
+        exclude: /\.([jt]s|json)$/,
         use: [
           {
             loader: 'file-loader',
@@ -43,7 +43,7 @@ module.exports = {
             },
           },
         ],
-      },
+      }
     ],
   },
   output: {
