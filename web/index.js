@@ -89,9 +89,12 @@ function offsetAdapted(num, text) {
   return num - offset
 }
 
+// load json
 let data = require('./documents/wikipedia_cheetah.json')
 
+// get json id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
+// get cas text
 var documenttext = ""
 for (let el of data["%FEATURE_STRUCTURES"]) {
   if (el["%ID"] == sofa_id) {
@@ -99,6 +102,7 @@ for (let el of data["%FEATURE_STRUCTURES"]) {
     target.innerText = documenttext
   }
 }
+// highlight each token
 for (let el of data["%FEATURE_STRUCTURES"]) {
   if (el["%TYPE"].startsWith("webanno")) {
     await anchor({ "type": "TextPositionSelector", "start": offsetAdapted(el["begin"], documenttext), "end": offsetAdapted(el["end"], documenttext) });
