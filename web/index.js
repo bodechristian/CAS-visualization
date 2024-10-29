@@ -90,7 +90,7 @@ function offsetAdapted(num, text) {
 }
 
 // load json
-let data = require('./documents/wikipedia_cheetah.json')
+let data = require('./documents/tempp.json')
 
 // get json id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
