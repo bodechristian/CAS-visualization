@@ -60,9 +60,8 @@ async function anchor(selector, attributes) {
   for await (const range of matchAll(target)) {
     ranges.push(range);
   }
-  // create string from features for tooltip
+  // create string from layer+features for tooltip
   let str1 = attributes["%TYPE"]
-  console.log(str1);
 
   let firstAttribute = true
   for (let k of Object.keys(attributes)) {
@@ -80,50 +79,26 @@ async function anchor(selector, attributes) {
 
 }
 
-function offsetAdapted(num, text) {
-  // the html tag <p> makes newlines to <br/>, which are then removed by apache-annotator's normalizing
-  // this throws off the index from .cas to apache-annotator
-  // Thus the .cas indexes are adapted
-  // TODO: fix issue when num close to indices
-
-  // create list of indexes of newline characters
-  var indices = [];
-  for (var i = 0; i < text.length; i++) {
-    if (text[i] == "\n" || text[i] == "\r") { indices.push(i); }
-  }
-
-  // offset increases for every newline that occurs BEFORE the given index
-  var offset = 0
-  for (var i = 0; i < indices.length; i++) {
-    if (indices[i] < num) { offset += 1 }
-  }
-
-  return num - offset
-}
-
 // load json
 let data = require('./documents/temp.json')
 
-// get json id
+// get sofa id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
 // get cas text
-var documenttext = ""
 for (let el of data["%FEATURE_STRUCTURES"]) {
   if (el["%ID"] == sofa_id) {
-    documenttext = el["sofaString"]
-    // target.innerText = documenttext
-    let textNode = document.createTextNode(documenttext)
+    let textNode = document.createTextNode(el["sofaString"])
     target.appendChild(textNode)
   }
 }
 // highlight each token
-let coreAttributes = ["%ID", "begin", "end", "@sofa"]
 for (let el of data["%FEATURE_STRUCTURES"]) {
+  let irrelevantAttributes = ["%ID", "begin", "end", "@sofa"]
   let relevantAttributes = {}
 
   // collect feature attributes
   for (let attr of Object.keys(el)) {
-    if (!coreAttributes.includes(attr)) {
+    if (!irrelevantAttributes.includes(attr)) {
       relevantAttributes[attr] = el[attr]
     }
   }
