@@ -51,7 +51,7 @@ const createMatcher = makeRefinable((selector) => {
   return innerCreateMatcher(selector);
 });
 
-async function anchor(selector) {
+async function anchor(selector, attributes) {
   const matchAll = createMatcher(selector);
   const ranges = [];
 
@@ -60,9 +60,21 @@ async function anchor(selector) {
   for await (const range of matchAll(target)) {
     ranges.push(range);
   }
+  // create string from features for tooltip
+  let str1 = attributes["%TYPE"]
+  console.log(str1);
 
+  let firstAttribute = true
+  for (let k of Object.keys(attributes)) {
+    if (k == "%TYPE") { continue; }
+    if (firstAttribute) {
+      str1 = str1.concat("\n", k + ": " + attributes[k])
+    } else {
+      str1 = str1.concat(" | ", k + ": " + attributes[k])
+    }
+  }
   for (const range of ranges) {
-    const removeHighlight = highlightText(range);
+    const removeHighlight = highlightText(range, "mark", { "title": str1 });
     moduleState.cleanupFunctions.push(removeHighlight);
   }
 
@@ -105,9 +117,19 @@ for (let el of data["%FEATURE_STRUCTURES"]) {
   }
 }
 // highlight each token
+let coreAttributes = ["%ID", "begin", "end", "@sofa"]
 for (let el of data["%FEATURE_STRUCTURES"]) {
+  let relevantAttributes = {}
+
+  // collect feature attributes
+  for (let attr of Object.keys(el)) {
+    if (!coreAttributes.includes(attr)) {
+      relevantAttributes[attr] = el[attr]
+    }
+  }
+
   if (el["%TYPE"].startsWith("webanno")) {
-    await anchor({ "type": "TextPositionSelector", "start": el["begin"], "end": el["end"] });
+    await anchor({ "type": "TextPositionSelector", "start": el["begin"], "end": el["end"] }, relevantAttributes);
   }
 }
 
