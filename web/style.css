@@ -27,13 +27,26 @@ body {
   margin: 2rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 500;
 }
 
-h1 { font-size: 1.4em; }
-h2 { font-size: 1.2em; }
-h3 { font-size: 1.1em; }
+h1 {
+  font-size: 1.4em;
+}
+
+h2 {
+  font-size: 1.2em;
+}
+
+h3 {
+  font-size: 1.1em;
+}
 
 header {
   border-bottom: 1px solid lightgrey;
@@ -44,7 +57,7 @@ nav {
   margin: 2rem;
 }
 
-main > *:not(.full-width) {
+main>*:not(.full-width) {
   max-width: 40rem;
   margin: 2rem auto;
 }
@@ -72,4 +85,8 @@ mark {
   width: 10rem;
   flex-grow: 1;
   margin: 1rem;
+}
+
+#target {
+  white-space: pre-wrap;
 }

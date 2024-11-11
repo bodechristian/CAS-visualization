@@ -90,7 +90,7 @@ function offsetAdapted(num, text) {
 }
 
 // load json
-let data = require('./documents/tempp.json')
+let data = require('./documents/temp.json')
 
 // get json id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
@@ -99,13 +99,15 @@ var documenttext = ""
 for (let el of data["%FEATURE_STRUCTURES"]) {
   if (el["%ID"] == sofa_id) {
     documenttext = el["sofaString"]
-    target.innerText = documenttext
+    // target.innerText = documenttext
+    let textNode = document.createTextNode(documenttext)
+    target.appendChild(textNode)
   }
 }
 // highlight each token
 for (let el of data["%FEATURE_STRUCTURES"]) {
   if (el["%TYPE"].startsWith("webanno")) {
-    await anchor({ "type": "TextPositionSelector", "start": offsetAdapted(el["begin"], documenttext), "end": offsetAdapted(el["end"], documenttext) });
+    await anchor({ "type": "TextPositionSelector", "start": el["begin"], "end": el["end"] });
   }
 }
 
