@@ -80,7 +80,7 @@ async function anchor(selector, attributes) {
 }
 
 // load json
-let data = require('./documents/temp.json')
+let data = require('./../../../python/temp.json')
 
 // get sofa id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
