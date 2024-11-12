@@ -2,7 +2,7 @@
 
 In order to use, change the .json path in `index.js`, line 83, to the appropriate path and use `yarn start` to start the service.
 
-Based on Apache Annotator:
+Based on Apache Annotator: https://gitbox.apache.org/repos/asf/incubator-annotator.git
 
 # [Apache Annotator](http://annotator.apache.org/) (incubating) [![Build Status](https://github.com/apache/incubator-annotator/actions/workflows/node.js.yml/badge.svg)](https://github.com/apache/incubator-annotator/actions/workflows/node.js.yml)
 
