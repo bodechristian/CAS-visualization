@@ -61,8 +61,6 @@ export function createTextPositionSelectorMatcher(
 
   return async function* matchAll(scope) {
     const textChunks = new TextNodeChunker(scope);
-    console.log(textChunks);
-
 
     const matches = abstractMatcher(textChunks);
 
