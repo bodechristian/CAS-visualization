@@ -51,7 +51,7 @@ const createMatcher = makeRefinable((selector) => {
   return innerCreateMatcher(selector);
 });
 
-async function anchor(selector, attributes) {
+async function anchor(selector, layerAndFeatures) {
   const matchAll = createMatcher(selector);
   const ranges = [];
 
@@ -60,27 +60,40 @@ async function anchor(selector, attributes) {
   for await (const range of matchAll(target)) {
     ranges.push(range);
   }
-  // create string from layer+features for tooltip
-  let str1 = attributes["%TYPE"]
 
-  let firstAttribute = true
-  for (let k of Object.keys(attributes)) {
-    if (k == "%TYPE") { continue; }
-    if (firstAttribute) {
-      str1 = str1.concat("\n", k + ": " + attributes[k])
-    } else {
-      str1 = str1.concat(" | ", k + ": " + attributes[k])
+  // if its a highlight and not an annotation:
+  if (layerAndFeatures["%TYPE"] == 'highlights') {
+    for (const range of ranges) {
+      const removeHighlight = highlightText(range, "highlights");
+      moduleState.cleanupFunctions.push(removeHighlight);
+    }
+  } else { // annotations
+    // create string from layer+features for tooltip
+    let str1 = layerAndFeatures["%TYPE"]
+
+    let firstAttribute = true
+    for (let k of Object.keys(layerAndFeatures)) {
+      if (k == "%TYPE") { continue; }
+      if (firstAttribute) {
+        str1 = str1.concat("\n", k + ": " + layerAndFeatures[k])
+      } else {
+        str1 = str1.concat(" | ", k + ": " + layerAndFeatures[k])
+      }
+    }
+    for (const range of ranges) {
+      const removeHighlight = highlightText(range, "mark", { "title": str1 });
+      moduleState.cleanupFunctions.push(removeHighlight);
     }
   }
-  for (const range of ranges) {
-    const removeHighlight = highlightText(range, "mark", { "title": str1 });
-    moduleState.cleanupFunctions.push(removeHighlight);
-  }
+
+
 
 }
 
 // load json
 let data = require('./documents/temp.json')
+// alternatively create own path directly to output of INCEpTION conversational agent
+// let data = require('./../../../python/temp.json')
 
 // get sofa id
 let sofa_id = data["%VIEWS"]["_InitialView"]["%SOFA"]
@@ -94,17 +107,17 @@ for (let el of data["%FEATURE_STRUCTURES"]) {
 // highlight each token
 for (let el of data["%FEATURE_STRUCTURES"]) {
   let irrelevantAttributes = ["%ID", "begin", "end", "@sofa"]
-  let relevantAttributes = {}
+  let layerAndFeatures = {}
 
   // collect feature attributes
   for (let attr of Object.keys(el)) {
     if (!irrelevantAttributes.includes(attr)) {
-      relevantAttributes[attr] = el[attr]
+      layerAndFeatures[attr] = el[attr]
     }
   }
 
-  if (el["%TYPE"].startsWith("webanno")) {
-    await anchor({ "type": "TextPositionSelector", "start": el["begin"], "end": el["end"] }, relevantAttributes);
+  if (el["%TYPE"].startsWith("webanno") || el["%TYPE"] == 'highlights') {
+    await anchor({ "type": "TextPositionSelector", "start": el["begin"], "end": el["end"] }, layerAndFeatures);
   }
 }
 

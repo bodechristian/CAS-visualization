@@ -75,6 +75,11 @@ mark {
   outline: 1px solid rgba(255, 100, 0, 0.8);
 }
 
+highlights {
+  background-color: rgba(24, 190, 93, 0.5);
+  outline: 1px solid rgba(54, 32, 17, 0.8);
+}
+
 .columns {
   display: flex;
   flex-flow: row wrap;
